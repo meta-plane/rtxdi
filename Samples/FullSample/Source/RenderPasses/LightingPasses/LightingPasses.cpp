@@ -57,7 +57,7 @@ BRDFPathTracing_SecondarySurfaceReSTIRDIParameters GetDefaultBRDFPathTracingSeco
 {
     BRDFPathTracing_SecondarySurfaceReSTIRDIParameters params = {};
 
-    params.initialSamplingParams.localLightSamplingMode = ReSTIRDI_LocalLightSamplingMode::ReGIR_RIS;
+    params.initialSamplingParams.localLightSamplingMode = ReSTIRDI_LocalLightSamplingMode::Uniform;
     params.initialSamplingParams.numLocalLightSamples = 2;
     params.initialSamplingParams.numInfiniteLightSamples = 1;
     params.initialSamplingParams.numEnvironmentSamples = 1;
@@ -433,8 +433,12 @@ void LightingPasses::CreateReSTIRDIPipelines(const std::vector<donut::engine::Sh
 
 void LightingPasses::CreateReSTIRGIPipelines(const std::vector<donut::engine::ShaderMacro>& regirMacros, bool useRayQuery)
 {
-    m_brdfRayTracingPass.Init(m_device, *m_shaderFactory, "app/LightingPasses/BrdfRayTracing.hlsl", {}, false, RTXDI_SCREEN_SPACE_GROUP_SIZE, m_bindingLayout, nullptr, m_bindlessLayout);
-    m_shadeSecondarySurfacesPass.Init(m_device, *m_shaderFactory, "app/LightingPasses/ShadeSecondarySurfaces.hlsl", regirMacros, false, RTXDI_SCREEN_SPACE_GROUP_SIZE, m_bindingLayout, nullptr, m_bindlessLayout);
+    // Why was ray query usage disabled for these passes?
+    // m_brdfRayTracingPass.Init(m_device, *m_shaderFactory, "app/LightingPasses/BrdfRayTracing.hlsl", {}, false, RTXDI_SCREEN_SPACE_GROUP_SIZE, m_bindingLayout, nullptr, m_bindlessLayout);
+    // m_shadeSecondarySurfacesPass.Init(m_device, *m_shaderFactory, "app/LightingPasses/ShadeSecondarySurfaces.hlsl", regirMacros, false, RTXDI_SCREEN_SPACE_GROUP_SIZE, m_bindingLayout, nullptr, m_bindlessLayout);
+    
+    m_brdfRayTracingPass.Init(m_device, *m_shaderFactory, "app/LightingPasses/BrdfRayTracing.hlsl", {}, useRayQuery, RTXDI_SCREEN_SPACE_GROUP_SIZE, m_bindingLayout, nullptr, m_bindlessLayout);
+    m_shadeSecondarySurfacesPass.Init(m_device, *m_shaderFactory, "app/LightingPasses/ShadeSecondarySurfaces.hlsl", regirMacros, useRayQuery, RTXDI_SCREEN_SPACE_GROUP_SIZE, m_bindingLayout, nullptr, m_bindlessLayout);
     m_restirGIPasses.LoadShaders(m_device, *m_shaderFactory, useRayQuery, m_bindingLayout, m_bindlessLayout);
 }
 
@@ -723,9 +727,11 @@ void LightingPasses::RenderIndirectLighting(
 
     if (restirDIContext.GetStaticParameters().CheckerboardSamplingMode != rtxdi::CheckerboardMode::Off)
         dispatchSize.x /= 2;
+    bool brdfPassExecuted = false;
     if (localSettings.directLightingMode == DirectLightingMode::Brdf)
     {
         ExecuteRayTracingPass(commandList, m_brdfRayTracingPass, localSettings.enableRayCounts, "BrdfRayTracingPass", dispatchSize, ProfilerSection::BrdfRays);
+        brdfPassExecuted = true;
     }
     if (indirectLightingMode != IndirectLightingMode::None)
     {
@@ -734,12 +740,14 @@ void LightingPasses::RenderIndirectLighting(
 
         if (indirectLightingMode == IndirectLightingMode::Brdf)
         {
-            ExecuteRayTracingPass(commandList, m_brdfRayTracingPass, localSettings.enableRayCounts, "BrdfRayTracingPass", dispatchSize, ProfilerSection::BrdfRays);
+            if (!brdfPassExecuted)
+                ExecuteRayTracingPass(commandList, m_brdfRayTracingPass, localSettings.enableRayCounts, "BrdfRayTracingPass", dispatchSize, ProfilerSection::BrdfRays);
             ExecuteRayTracingPass(commandList, m_shadeSecondarySurfacesPass, localSettings.enableRayCounts, "ShadeSecondarySurfaces", dispatchSize, ProfilerSection::ShadeSecondary, nullptr);
         }
         else if (indirectLightingMode == IndirectLightingMode::ReStirGI)
         {
-            ExecuteRayTracingPass(commandList, m_brdfRayTracingPass, localSettings.enableRayCounts, "BrdfRayTracingPass", dispatchSize, ProfilerSection::BrdfRays);
+            if (!brdfPassExecuted)
+                ExecuteRayTracingPass(commandList, m_brdfRayTracingPass, localSettings.enableRayCounts, "BrdfRayTracingPass", dispatchSize, ProfilerSection::BrdfRays);
             ExecuteRayTracingPass(commandList, m_shadeSecondarySurfacesPass, localSettings.enableRayCounts, "ShadeSecondarySurfaces", dispatchSize, ProfilerSection::ShadeSecondary, nullptr);
 
             m_restirGIPasses.EnableRayCounts(localSettings.enableRayCounts);

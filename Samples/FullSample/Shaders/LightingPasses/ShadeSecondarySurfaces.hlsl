@@ -132,8 +132,8 @@ void RayGen()
         radiance += indirectDiffuse * secondarySurface.material.diffuseAlbedo + indirectSpecular;
         // Firefly suppression
         float indirectLuminance = calcLuminance(radiance);
-        if (indirectLuminance > c_MaxIndirectRadiance)
-            radiance *= c_MaxIndirectRadiance / indirectLuminance;
+        // if (indirectLuminance > c_MaxIndirectRadiance)               // phgphg
+        //     radiance *= c_MaxIndirectRadiance / indirectLuminance;
     }
 
     bool outputShadingResult = true;

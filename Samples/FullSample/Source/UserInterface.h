@@ -167,7 +167,7 @@ struct UIDebugOutputSettings
 
 struct LocalLightSamplingUIData
 {
-    ReSTIRDI_LocalLightSamplingMode localLightSamplingMode = ReSTIRDI_LocalLightSamplingMode::ReGIR_RIS;
+    ReSTIRDI_LocalLightSamplingMode localLightSamplingMode = ReSTIRDI_LocalLightSamplingMode::Uniform;
     uint32_t numLocalLightUniformSamples = 8;
     uint32_t numLocalLightPowerRISSamples = 8;
     uint32_t numLocalLightReGIRRISSamples = 8;
@@ -182,33 +182,30 @@ struct UIData
     bool showUI = true;
     bool isLoading = true;
 
-    nvrhi::GraphicsAPI graphicsAPI = nvrhi::GraphicsAPI::D3D12;
+    nvrhi::GraphicsAPI graphicsAPI = nvrhi::GraphicsAPI::VULKAN;
 
     float loadingPercentage = 0.f;
 
     ibool enableTextures = true;
     uint32_t framesToAccumulate = 0;
     ibool enableToneMapping = true;
+    ibool enableAutoExposure = false;
     ibool enablePixelJitter = true;
     ibool rasterizeGBuffer = true;
     ibool useRayQuery = true;
-    ibool enableBloom = true;
+    ibool enableBloom = false;
     float exposureBias = -1.0f;
     float verticalFov = 60.f;
 
     QualityPreset preset = QualityPreset::Medium;
     ReSTIRPTQualityPreset restirPtQualityPreset = ReSTIRPTQualityPreset::Medium;
 
-#if DONUT_WITH_DLSS
-    AntiAliasingMode aaMode = AntiAliasingMode::DLSS;
-#else
-    AntiAliasingMode aaMode = AntiAliasingMode::TAA;
-#endif
+    AntiAliasingMode aaMode = AntiAliasingMode::Accumulation;
 
     uint32_t numAccumulatedFrames = 1;
 
-    IndirectLightingMode indirectLightingMode = IndirectLightingMode::ReStirPT;
-    ibool enableAnimations = true;
+    IndirectLightingMode indirectLightingMode = IndirectLightingMode::None;
+    ibool enableAnimations = false;
     float animationSpeed = 1.f;
     int environmentMapDirty = 0; // 1 -> needs to be rendered; 2 -> passes/textures need to be created
     int environmentMapIndex = -1;
@@ -216,7 +213,7 @@ struct UIData
     float environmentIntensityBias = 0.f;
     float environmentRotation = 0.f;
 
-    bool enableDenoiser = true;
+    bool enableDenoiser = false;
 #ifdef WITH_NRD
     NrdIntegrationDebugSettings nrdDebugSettings = {};
     float debug = 0.0f;

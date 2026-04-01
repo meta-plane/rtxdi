@@ -11,6 +11,8 @@
  */
 
 #include "SceneRenderer.h"
+#include <fstream>
+#include <sstream>
 
 #include <donut/render/ToneMappingPasses.h>
 #include <donut/render/TemporalAntiAliasingPass.h>
@@ -278,6 +280,29 @@ void SceneRenderer::LoadInitialCameraSettings()
     DefaultCameraSettingsForScene defaults = GetDefaultCameraSettingsForScene(m_args.sceneAsset);
     float3 camPos = m_args.cameraPosition.has_value() ? m_args.cameraPosition.value() : defaults.position;
     float3 dir = m_args.cameraDirection.has_value() ? m_args.cameraDirection.value() : defaults.direction;
+
+    // Override with camera.ini if it exists and no explicit camera args were given
+    if (!m_args.cameraPosition.has_value() && !m_args.cameraDirection.has_value())
+    {
+        std::ifstream file("camera.ini");
+        if (file.is_open())
+        {
+            std::string line;
+            while (std::getline(file, line))
+            {
+                std::istringstream ss(line);
+                std::string key;
+                if (std::getline(ss, key, '='))
+                {
+                    if (key == "position")
+                        ss >> camPos.x >> camPos.y >> camPos.z;
+                    else if (key == "direction")
+                        ss >> dir.x >> dir.y >> dir.z;
+                }
+            }
+        }
+    }
+
     m_camera.LookTo(camPos, dir);
 
     m_camera.SetRotateSpeed(m_args.cameraRotateSpeed.has_value() ? m_args.cameraRotateSpeed.value() : defaults.rotateSpeed);
@@ -303,12 +328,18 @@ void SceneRenderer::SceneLoaded()
         }
     }
 
+    //if (!m_sunLight)
+    //{
+    //    m_sunLight = std::make_shared<engine::DirectionalLight>();
+    //    sceneGraph->AttachLeafNode(sceneGraph->GetRootNode(), m_sunLight);
+    //    m_sunLight->SetDirection(dm::double3(0.15, -1.0, 0.3));
+    //    m_sunLight->angularSize = 1.f;
+    //}
+    // Dummy to avoid nullptr
     if (!m_sunLight)
     {
         m_sunLight = std::make_shared<engine::DirectionalLight>();
-        sceneGraph->AttachLeafNode(sceneGraph->GetRootNode(), m_sunLight);
-        m_sunLight->SetDirection(dm::double3(0.15, -1.0, 0.3));
-        m_sunLight->angularSize = 1.f;
+        m_sunLight->irradiance = 0.f;
     }
 
     m_commandList->open();
@@ -317,11 +348,14 @@ void SceneRenderer::SceneLoaded()
     GetDevice()->executeCommandList(m_commandList);
 
     // Create an environment light
+    //m_environmentLight = std::make_shared<EnvironmentLight>();
+    //sceneGraph->AttachLeafNode(sceneGraph->GetRootNode(), m_environmentLight);
+    //m_environmentLight->SetName("Environment");
+    //m_ui.environmentMapDirty = 2;
+    //m_ui.environmentMapIndex = 0;
+    // Dummy to avoid nullptr
     m_environmentLight = std::make_shared<EnvironmentLight>();
-    sceneGraph->AttachLeafNode(sceneGraph->GetRootNode(), m_environmentLight);
-    m_environmentLight->SetName("Environment");
-    m_ui.environmentMapDirty = 2;
-    m_ui.environmentMapIndex = 0;
+    m_environmentLight->textureIndex = -1;
 
     m_rasterizedGBufferPass->CreateBindingSet();
 
@@ -1702,10 +1736,12 @@ void SceneRenderer::ToneMapping(bool exposureResetRequired)
         ToneMappingParams.minAdaptedLuminance = 0.002f;
         ToneMappingParams.maxAdaptedLuminance = 0.2f;
         ToneMappingParams.exposureBias = m_ui.exposureBias;
-        ToneMappingParams.eyeAdaptationSpeedUp = 2.0f;
-        ToneMappingParams.eyeAdaptationSpeedDown = 1.0f;
-
-        if (exposureResetRequired)
+        if (m_ui.enableAutoExposure && !exposureResetRequired)
+        {
+            ToneMappingParams.eyeAdaptationSpeedUp = 2.0f;
+            ToneMappingParams.eyeAdaptationSpeedDown = 1.0f;
+        }
+        else
         {
             ToneMappingParams.eyeAdaptationSpeedUp = 0.f;
             ToneMappingParams.eyeAdaptationSpeedDown = 0.f;

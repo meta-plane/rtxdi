@@ -86,7 +86,7 @@ endforeach()
 
 include(CMakeDependentOption)
 
-cmake_dependent_option(RTXDI_CONSOLE_APP "Build the sample as a console application" OFF WIN32 OFF)
+cmake_dependent_option(RTXDI_CONSOLE_APP "Build the sample as a console application" ON WIN32 ON)
 
 if (RTXDI_CONSOLE_APP)
 	add_executable(${project} ${sources})

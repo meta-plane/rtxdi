@@ -132,6 +132,8 @@ public:
 
     virtual bool MouseButtonUpdate(int button, int action, int mods) override;
 
+    virtual bool ShouldRenderUnfocused() override { return m_ui.aaMode == AntiAliasingMode::Accumulation; }
+
     virtual void Animate(float fElapsedTimeSeconds) override;
 
     virtual void BackBufferResized(const uint32_t width, const uint32_t height, const uint32_t sampleCount) override;

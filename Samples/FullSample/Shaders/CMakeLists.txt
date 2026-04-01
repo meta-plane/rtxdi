@@ -155,6 +155,7 @@ if (DONUT_WITH_VULKAN)
       ${NRD_OPTIONS}
       ${NVRHI_DEFAULT_VK_REGISTER_OFFSETS}
       -D SPIRV
+      --embedPDB # Enable embedding debug information in the SPIR-V binary, which allows tools like RenderDoc to show original HLSL source and variable names
       --compiler ${DXC_SPIRV_PATH})
 
    add_custom_command(TARGET ${shaders_target} PRE_BUILD

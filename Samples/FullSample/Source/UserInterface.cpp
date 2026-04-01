@@ -36,6 +36,7 @@
 
 #include "UserInterface.h"
 #include "Profiler.h"
+#include <fstream>
 #include "Scene/Lights.h"
 #include "Scene/SampleScene.h"
 
@@ -154,10 +155,12 @@ void UIData::ApplyPreset()
         enableCheckerboardSampling = false;
         restirDI.resamplingMode = rtxdi::ReSTIRDI_ResamplingMode::TemporalAndSpatial;
         restirDI.initialSamplingParams.localLightSamplingMode = ReSTIRDI_LocalLightSamplingMode::ReGIR_RIS;
+        // restirDI.initialSamplingParams.localLightSamplingMode = ReSTIRDI_LocalLightSamplingMode::Uniform; // phgphg
         restirDI.neeLocalLightSampling.numLocalLightUniformSamples = 8;
         restirDI.neeLocalLightSampling.numLocalLightPowerRISSamples = 8;
         restirDI.neeLocalLightSampling.numLocalLightReGIRRISSamples = 8;
         restirDI.initialSamplingParams.numLocalLightSamples = restirDI.neeLocalLightSampling.numLocalLightReGIRRISSamples;
+        // restirDI.initialSamplingParams.numLocalLightSamples = restirDI.neeLocalLightSampling.numLocalLightUniformSamples; // phgphg
         restirDI.initialSamplingParams.numBrdfSamples = 1;
         restirDI.initialSamplingParams.numInfiniteLightSamples = 1;
         restirDI.temporalResamplingParams.enableVisibilityShortcut = true;
@@ -1217,6 +1220,7 @@ void UserInterface::PostProcessSettings()
 
         ImGui::Checkbox("Tone mapping", (bool*)&m_ui.enableToneMapping);
         ImGui::SameLine(160.f);
+        ImGui::Checkbox("Auto exposure", (bool*)&m_ui.enableAutoExposure);
         ImGui::SliderFloat("Exposure bias", &m_ui.exposureBias, -4.f, 2.f);
 
         ImGui::Checkbox("Bloom", (bool*)&m_ui.enableBloom);
@@ -1592,12 +1596,13 @@ void UserInterface::CopyCamera() const
     dm::float3 cameraPos = m_ui.resources->camera->GetPosition();
     dm::float3 cameraDir = m_ui.resources->camera->GetDir();
 
-    std::stringstream text;
-    text.precision(4);
-    text << "\"position\": [" << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << "], ";
-    text << "\"direction\": [" << cameraDir.x << ", " << cameraDir.y << ", " << cameraDir.z << "]";
-
-    glfwSetClipboardString(GetDeviceManager()->GetWindow(), text.str().c_str());
+    std::ofstream file("camera.ini");
+    if (file.is_open())
+    {
+        file.precision(6);
+        file << "position=" << cameraPos.x << " " << cameraPos.y << " " << cameraPos.z << "\n";
+        file << "direction=" << cameraDir.x << " " << cameraDir.y << " " << cameraDir.z << "\n";
+    }
 }
 
 static std::string getEnvironmentMapName(SampleScene& scene, const int index)
@@ -1903,7 +1908,7 @@ void UserInterface::SceneSettings()
 
         dm::float3 cameraPos = m_ui.resources->camera->GetPosition();
         ImGui::Text("Camera: %.2f %.2f %.2f", cameraPos.x, cameraPos.y, cameraPos.z);
-        if (ImGui::Button("Copy Camera to Clipboard"))
+        if (ImGui::Button("Copy Camera to camera.ini"))
         {
             CopyCamera();
         }

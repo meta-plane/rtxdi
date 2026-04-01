@@ -448,7 +448,44 @@ RTXDI_LightBufferParameters PrepareLightsPass::Process(
     }
 
     assert(numImportanceSampledEnvironmentLights <= 1);
-    
+
+    // Log light counts once
+    {
+        static bool logged = false;
+        if (!logged)
+        {
+            uint32_t numEmissiveTriangles = outLightBufferParams.localLightBufferRegion.numLights; // before adding primitive lights
+
+            uint32_t numSpot = 0, numPoint = 0, numDirectional = 0, numCylinder = 0, numDisk = 0, numRect = 0, numEnv = 0;
+            for (const auto& pLight : sceneLights)
+            {
+                switch (pLight->GetLightType())
+                {
+                case LightType_Spot:        numSpot++; break;
+                case LightType_Point:       numPoint++; break;
+                case LightType_Directional: numDirectional++; break;
+                case LightType_Cylinder:    numCylinder++; break;
+                case LightType_Disk:        numDisk++; break;
+                case LightType_Rect:        numRect++; break;
+                case LightType_Environment: numEnv++; break;
+                default: break;
+                }
+            }
+
+            donut::log::info("=== Light Buffer Summary ===");
+            if (numEmissiveTriangles) donut::log::info("  Emissive triangles : %u", numEmissiveTriangles);
+            if (numSpot)        donut::log::info("  Spot lights        : %u", numSpot);
+            if (numPoint)       donut::log::info("  Point lights       : %u", numPoint);
+            if (numDirectional) donut::log::info("  Directional lights : %u", numDirectional);
+            if (numCylinder)    donut::log::info("  Cylinder lights    : %u", numCylinder);
+            if (numDisk)        donut::log::info("  Disk lights        : %u", numDisk);
+            if (numRect)        donut::log::info("  Rect lights        : %u", numRect);
+            if (numEnv)         donut::log::info("  Environment lights : %u", numEnv);
+            donut::log::info("  Total              : %u", numEmissiveTriangles + numSpot + numPoint + numDirectional + numCylinder + numDisk + numRect + numEnv);
+            logged = true;
+        }
+    }
+
     outLightBufferParams.localLightBufferRegion.numLights += numFinitePrimLights;
     outLightBufferParams.infiniteLightBufferRegion.firstLightIndex = outLightBufferParams.localLightBufferRegion.numLights;
     outLightBufferParams.infiniteLightBufferRegion.numLights = numInfinitePrimLights;

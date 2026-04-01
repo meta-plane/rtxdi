@@ -224,6 +224,8 @@ int main(int argc, char** argv)
     ProcessCommandLine(argc, argv, g_ApplicationTitle, deviceParams, ui, args);
 #endif
 
+    args.graphicsApi = nvrhi::GraphicsAPI::VULKAN;
+
     std::unique_ptr<app::DeviceManager> deviceManager(app::DeviceManager::Create(args.graphicsApi));
     const char* apiString = nvrhi::utils::GraphicsAPIToString(deviceManager->GetGraphicsAPI());
     std::string windowTitle = g_ApplicationTitle + " (" + std::string(apiString) + ")";

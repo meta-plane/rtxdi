@@ -92,7 +92,7 @@ public:
         ibool enableDenoiserPSR = true;
         ibool usePSRMvecForResampling = true;
         ibool updatePSRwithResampling = true;
-        DirectLightingMode directLightingMode = DirectLightingMode::ReStir;
+        DirectLightingMode directLightingMode = DirectLightingMode::Brdf;
 
         BRDFPathTracing_Parameters brdfptParams = GetDefaultBRDFPathTracingParams();
         PTParameters ptParameters = GetDefaultPTParameters();
