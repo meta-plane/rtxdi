@@ -1,12 +1,6 @@
-[submodule "NRD"]
-	path = External/NRD
-	url = https://github.com/NVIDIA-RTX/NRD.git
 [submodule "thirdparty/cxxopts"]
 	path = External/cxxopts
 	url = https://github.com/jarro2783/cxxopts.git
 [submodule "Assets/Media"]
 	path = Assets/Media
 	url = https://github.com/NVIDIA-RTX/RTXDI-Assets
-[submodule "External/NVAPI"]
-	path = External/NVAPI
-	url = https://github.com/NVIDIA/nvapi.git
