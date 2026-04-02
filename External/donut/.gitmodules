@@ -1,0 +1,18 @@
+[submodule "nvrhi"]
+	path = nvrhi
+	url = ../NVRHI.git
+[submodule "thirdparty/imgui"]
+	path = thirdparty/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "thirdparty/stb"]
+	path = thirdparty/stb
+	url = https://github.com/nothings/stb.git
+[submodule "thirdparty/glfw"]
+	path = thirdparty/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "thirdparty/cgltf"]
+	path = thirdparty/cgltf
+	url = https://github.com/jkuhlmann/cgltf
+[submodule "ShaderMake"]
+	path = ShaderMake
+	url = https://github.com/NVIDIA-RTX/ShaderMake.git
