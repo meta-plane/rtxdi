@@ -157,6 +157,7 @@ struct CompositingConstants
 
     float noiseClampHigh;
     uint checkerboard;
+    uint visualizeMaterialDomain; // phgphg: material domain visualization
 };
 
 struct AccumulationConstants

@@ -194,6 +194,7 @@ struct UIData
     ibool rasterizeGBuffer = true;
     ibool useRayQuery = true;
     ibool enableBloom = false;
+    ibool visualizeMaterialDomain = false; // phgphg: material domain visualization
     float exposureBias = -1.0f;
     float verticalFov = 60.f;
 

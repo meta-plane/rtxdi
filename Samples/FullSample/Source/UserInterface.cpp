@@ -1224,6 +1224,7 @@ void UserInterface::PostProcessSettings()
         ImGui::SliderFloat("Exposure bias", &m_ui.exposureBias, -4.f, 2.f);
 
         ImGui::Checkbox("Bloom", (bool*)&m_ui.enableBloom);
+        ImGui::Checkbox("Visualize Material Domain", (bool*)&m_ui.visualizeMaterialDomain); // phgphg: material domain visualization
 
         ImGui::TreePop();
     }

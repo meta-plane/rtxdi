@@ -90,7 +90,7 @@ void tracePrimaryRay(inout RayPayload payload, RayDesc ray, bool firstRay)
     uint InstanceInclusionMask = INSTANCE_MASK_TRANSPARENT;
 
     if (firstRay)
-        InstanceInclusionMask |= INSTANCE_MASK_OPAQUE;
+        InstanceInclusionMask |= INSTANCE_MASK_OPAQUE | INSTANCE_MASK_ALPHA_TESTED; // phgphg: glass pass 투명도 오류 수정, alpha-tested geometry가 glass ray에 보이도록 mask 추가
 
 #if USE_RAY_QUERY
     RayQuery<RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES | RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_CULL_BACK_FACING_TRIANGLES > rayQuery;
@@ -230,7 +230,9 @@ void RayGen()
 
         bool alphaMask = ms.opacity >= gs.material.alphaCutoff;
 
-        if (gs.material.domain == MaterialDomain_Opaque)
+        if (gs.material.domain == MaterialDomain_Opaque ||
+            gs.material.domain == MaterialDomain_AlphaTested ||   // phgphg: glass pass 투명도 오류 수정, 불투명 surface 뒤의 glass 블렌딩 방지
+            gs.material.domain == MaterialDomain_AlphaBlended)    // phgphg: glass pass 투명도 오류 수정, 불투명 surface 뒤의 glass 블렌딩 방지
         {
             if (g_Const.indirectLightingMode != INDIRECT_LIGHTING_MODE_RESTIRPT)
                 break;

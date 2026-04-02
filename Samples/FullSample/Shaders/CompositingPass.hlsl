@@ -125,5 +125,27 @@ void main(uint2 globalIdx : SV_DispatchThreadID)
     if(any(isnan(compositedColor)))
         compositedColor = float3(0, 0, 1);
 
+    // phgphg: material domain visualization
+    if (g_Const.visualizeMaterialDomain && depth != BACKGROUND_DEPTH)
+    {
+        uint domain = uint(round(u_MotionVectors[globalIdx].w));
+        float3 domainColor;
+        switch (domain)
+        {
+        case 0: domainColor = float3(0.4, 0.4, 0.4); break; // Opaque - 회색
+        case 1: domainColor = float3(0.0, 1.0, 0.0); break; // AlphaTested - 녹색
+        case 2: domainColor = float3(1.0, 1.0, 0.0); break; // AlphaBlended - 노랑
+        case 3: domainColor = float3(0.0, 0.5, 1.0); break; // Transmissive - 파랑
+        case 4: domainColor = float3(0.0, 1.0, 1.0); break; // TransmissiveAlphaTested - 시안
+        case 5: domainColor = float3(1.0, 0.0, 1.0); break; // TransmissiveAlphaBlended - 마젠타
+        default: domainColor = float3(1.0, 0.0, 0.0); break; // 알 수 없음 - 빨강
+        }
+        compositedColor = domainColor;
+    }
+    else if (g_Const.visualizeMaterialDomain && depth == BACKGROUND_DEPTH)
+    {
+        compositedColor = float3(0.0, 0.0, 0.0); // Background - 검정
+    }
+
     u_Output[globalIdx] = float4(compositedColor, 1.0);
 }
