@@ -35,6 +35,7 @@ this software is released into the Public Domain.
 */
 
 #include <donut/engine/Scene.h>
+#include <functional> // phgphg: rect light
 #include <donut/engine/GltfImporter.h>
 #include <donut/engine/ThreadPool.h>
 #include <donut/core/json.h>
@@ -295,6 +296,34 @@ void Scene::LoadSceneGraph(const Json::Value& nodeList, const std::shared_ptr<Sc
             }
 
             dst = loadedModel.rootNode;
+
+            // phgphg: rect light - disable emissive on model if "lights": false
+            const auto& lightsNode = src["lights"];
+            if (lightsNode.isBool() && !lightsNode.asBool())
+            {
+                std::function<void(SceneGraphNode*)> disableEmissive = [&](SceneGraphNode* node) {
+                    auto leaf = node->GetLeaf();
+                    if (leaf)
+                    {
+                        auto meshInst = std::dynamic_pointer_cast<MeshInstance>(leaf);
+                        if (meshInst)
+                        {
+                            for (auto& geo : meshInst->GetMesh()->geometries)
+                            {
+                                if (geo->material)
+                                {
+                                    geo->material->emissiveColor = 0.f;
+                                    geo->material->emissiveIntensity = 0.f;
+                                }
+                            }
+                        }
+                    }
+                    for (size_t i = 0; i < node->GetNumChildren(); i++)
+                        disableEmissive(node->GetChild(i));
+                };
+                disableEmissive(dst.get());
+            }
+            // phgphg
         }
         else
         {

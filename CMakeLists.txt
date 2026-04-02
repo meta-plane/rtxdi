@@ -37,7 +37,7 @@ option(DONUT_WITH_DX11 "" OFF)
 option(DONUT_WITH_VULKAN "" ON)
 option(DONUT_WITH_LZ4 "" OFF)
 option(DONUT_WITH_MINIZ "" OFF)
-option(DONUT_WITH_DLSS "" ON)
+option(DONUT_WITH_DLSS "" OFF) # phgphg: disable DLSS dependency
 
 # Setup NVAPI support
 option(NVRHI_WITH_NVAPI "Include NVAPI support (requires NVAPI SDK)" ON)
