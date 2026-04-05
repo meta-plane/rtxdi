@@ -89,6 +89,5 @@ void main()
     {
         targetExposure += diff * exp2(-g_ToneMapping.frameTime * adaptationSpeed);
     }
-
     u_Exposure[0] = asuint(targetExposure);
 }

@@ -76,7 +76,7 @@ void RayGen()
     float3 V = normalize(g_Const.view.cameraDirectionOrPosition.xyz - surface.worldPos);
 
     bool isSpecularRay = false;
-    bool isDeltaSurface = surface.material.roughness < kMinRoughness;
+    bool isDeltaSurface = g_Const.brdfPT.deferDeltaSurfaceShading && surface.material.roughness < kMinRoughness; // phgphg: deferDeltaSurfaceShading toggle
     float specular_PDF;
     float3 BRDF_over_PDF;
     float overall_PDF;

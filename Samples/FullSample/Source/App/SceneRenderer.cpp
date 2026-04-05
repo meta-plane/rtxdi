@@ -980,6 +980,7 @@ void SceneRenderer::UpdateReSTIRDIContextFromUI()
 {
     rtxdi::ReSTIRDIContext& restirDIContext = m_isContext->GetReSTIRDIContext();
     RTXDI_DIInitialSamplingParameters initialSamplingParams = m_ui.restirDI.initialSamplingParams;
+    initialSamplingParams.localLightSamplingMode = m_ui.restirDI.neeLocalLightSampling.localLightSamplingMode; // phgphg: 라디오 버튼 선택이 셰이더에 반영되지 않던 버그 수정 (프리셋에서만 설정되고 있었음)
     initialSamplingParams.numLocalLightSamples = m_ui.restirDI.neeLocalLightSampling.GetSelectedLocalLightSampleCount();
     restirDIContext.SetResamplingMode(m_ui.restirDI.resamplingMode);
     restirDIContext.SetInitialSamplingParameters(initialSamplingParams);
@@ -1733,20 +1734,23 @@ void SceneRenderer::ToneMapping(bool exposureResetRequired)
     if (m_ui.enableToneMapping)
     { // Tone mapping
         render::ToneMappingParameters ToneMappingParams;
-        ToneMappingParams.minAdaptedLuminance = 0.002f;
-        ToneMappingParams.maxAdaptedLuminance = 0.2f;
-        ToneMappingParams.exposureBias = m_ui.exposureBias;
-        if (m_ui.enableAutoExposure && !exposureResetRequired)
+        // phgphg: auto exposure
+        if (!m_ui.autoExposure)
         {
-            ToneMappingParams.eyeAdaptationSpeedUp = 2.0f;
-            ToneMappingParams.eyeAdaptationSpeedDown = 1.0f;
-        }
-        else
-        {
+            ToneMappingParams.minAdaptedLuminance = 1.0f;
+            ToneMappingParams.maxAdaptedLuminance = 1.0f;
+            ToneMappingParams.exposureBias = m_ui.exposureValue;
             ToneMappingParams.eyeAdaptationSpeedUp = 0.f;
             ToneMappingParams.eyeAdaptationSpeedDown = 0.f;
         }
-
+        else
+        {
+            ToneMappingParams.minAdaptedLuminance = 0.002f;
+            ToneMappingParams.maxAdaptedLuminance = 0.2f;
+            ToneMappingParams.exposureBias = m_ui.exposureBias;
+            ToneMappingParams.eyeAdaptationSpeedUp = exposureResetRequired ? 0.f : 2.0f;
+            ToneMappingParams.eyeAdaptationSpeedDown = exposureResetRequired ? 0.f : 1.0f;
+        }
         m_toneMappingPass->SimpleRender(m_commandList, ToneMappingParams, m_upscaledView, m_renderTargets->ResolvedColor);
     }
     else

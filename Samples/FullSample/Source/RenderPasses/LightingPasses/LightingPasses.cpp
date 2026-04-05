@@ -57,7 +57,7 @@ BRDFPathTracing_SecondarySurfaceReSTIRDIParameters GetDefaultBRDFPathTracingSeco
 {
     BRDFPathTracing_SecondarySurfaceReSTIRDIParameters params = {};
 
-    params.initialSamplingParams.localLightSamplingMode = ReSTIRDI_LocalLightSamplingMode::Uniform;
+    params.initialSamplingParams.localLightSamplingMode = ReSTIRDI_LocalLightSamplingMode::ReGIR_RIS;
     params.initialSamplingParams.numLocalLightSamples = 2;
     params.initialSamplingParams.numInfiniteLightSamples = 1;
     params.initialSamplingParams.numEnvironmentSamples = 1;
@@ -80,6 +80,7 @@ BRDFPathTracing_Parameters GetDefaultBRDFPathTracingParams()
     BRDFPathTracing_Parameters params;
     params.enableIndirectEmissiveSurfaces = false;
     params.enableReSTIRGI = false;
+    params.deferDeltaSurfaceShading = false; // phgphg: deferDeltaSurfaceShading toggle
     params.materialOverrideParams = GetDefaultBRDFPathTracingMaterialOverrideParams();
     params.secondarySurfaceReSTIRDIParams = GetDefaultBRDFPathTracingSecondarySurfaceReSTIRDIParams();
     return params;
@@ -713,6 +714,7 @@ void LightingPasses::RenderIndirectLighting(
     FillBRDFPTConstants(constants.brdfPT, gbufferSettings, localSettings, isContext.GetLightBufferParameters());
     constants.brdfPT.enableIndirectEmissiveSurfaces = enableEmissiveSurfaces;
     constants.brdfPT.enableReSTIRGI = indirectLightingMode == IndirectLightingMode::ReStirGI;
+    constants.brdfPT.deferDeltaSurfaceShading = localSettings.brdfptParams.deferDeltaSurfaceShading; // phgphg: deferDeltaSurfaceShading toggle
     constants.pt = localSettings.ptParameters;
 
     RTXDI_GIBufferIndices restirGIBufferIndices = restirGIContext.GetBufferIndices();

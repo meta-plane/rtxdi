@@ -130,6 +130,8 @@ if (DONUT_WITH_DX12)
       --relaxedInclude "../Types.h"
       ${NRD_OPTIONS}
      --hlsl2021
+      --embedPDB
+      -O 0
       --compiler ${DXC_PATH})
 
    add_custom_command(TARGET ${shaders_target} PRE_BUILD
@@ -156,6 +158,7 @@ if (DONUT_WITH_VULKAN)
       ${NVRHI_DEFAULT_VK_REGISTER_OFFSETS}
       -D SPIRV
       --embedPDB # Enable embedding debug information in the SPIR-V binary, which allows tools like RenderDoc to show original HLSL source and variable names
+      -O 0
       --compiler ${DXC_SPIRV_PATH})
 
    add_custom_command(TARGET ${shaders_target} PRE_BUILD

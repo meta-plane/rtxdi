@@ -231,10 +231,9 @@ float3 RAB_SurfaceEvaluateBrdfTimesNoL(RAB_Surface surface, float3 L)
         return 0;
 
     float d = Lambert(N, -L);
-    // float3 s = float3(0.0f, 0.0f, 0.0f);     // phgphg
-    // if (surface.material.roughness >= kMinRoughness)
-    //     s = GGX_times_NdotL(V, L, N, max(surface.material.roughness, kMinRoughness), surface.material.specularF0);
-    float3 s = GGX_times_NdotL(V, L, N, max(surface.material.roughness, kMinRoughness), surface.material.specularF0);
+    float3 s = float3(0.0f, 0.0f, 0.0f);
+    if (!g_Const.brdfPT.deferDeltaSurfaceShading || surface.material.roughness >= kMinRoughness) // phgphg: deferDeltaSurfaceShading toggle
+        s = GGX_times_NdotL(V, L, N, max(surface.material.roughness, kMinRoughness), surface.material.specularF0);
 
 	return d * surface.material.diffuseAlbedo + s;
 }

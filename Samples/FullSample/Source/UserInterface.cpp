@@ -860,6 +860,8 @@ void UserInterface::SamplingSettings()
 
         bool isUsingIndirect = m_ui.indirectLightingMode != IndirectLightingMode::None;
 
+        m_ui.resetAccumulation |= ImGui::Checkbox("Defer Delta Surface Shading", (bool*)&m_ui.lightingSettings.brdfptParams.deferDeltaSurfaceShading); // phgphg: deferDeltaSurfaceShading toggle
+
         if (m_ui.indirectLightingMode == IndirectLightingMode::Brdf || m_ui.indirectLightingMode == IndirectLightingMode::ReStirGI)
             m_ui.resetAccumulation |= ImGui::SliderFloat("Min Secondary Roughness", &m_ui.lightingSettings.brdfptParams.materialOverrideParams.minSecondaryRoughness, 0.f, 1.f);
 
@@ -1220,11 +1222,13 @@ void UserInterface::PostProcessSettings()
 
         ImGui::Checkbox("Tone mapping", (bool*)&m_ui.enableToneMapping);
         ImGui::SameLine(160.f);
-        ImGui::Checkbox("Auto exposure", (bool*)&m_ui.enableAutoExposure);
-        ImGui::SliderFloat("Exposure bias", &m_ui.exposureBias, -4.f, 2.f);
+        ImGui::Checkbox("Auto exposure", (bool*)&m_ui.autoExposure); // phgphg: auto exposure
+        if (!m_ui.autoExposure)
+            ImGui::SliderFloat("Exposure", &m_ui.exposureValue, -20.f, 20.f); // phgphg: auto exposure
+        else
+            ImGui::SliderFloat("Exposure bias", &m_ui.exposureBias, -4.f, 2.f);
 
         ImGui::Checkbox("Bloom", (bool*)&m_ui.enableBloom);
-        ImGui::Checkbox("Visualize Material Domain", (bool*)&m_ui.visualizeMaterialDomain); // phgphg: material domain visualization
 
         ImGui::TreePop();
     }

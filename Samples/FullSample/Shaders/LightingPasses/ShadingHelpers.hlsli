@@ -42,9 +42,9 @@ SplitBrdf EvaluateBrdf(RAB_Surface surface, float3 samplePosition)
 
     SplitBrdf brdf;
     brdf.demodulatedDiffuse = Lambert(surface.normal, -L);
-    // if (surface.material.roughness < kMinRoughness)      // phgphg
-    //     brdf.specular = 0;
-    // else
+    if (g_Const.brdfPT.deferDeltaSurfaceShading && surface.material.roughness < kMinRoughness) // phgphg: deferDeltaSurfaceShading toggle
+        brdf.specular = 0;
+    else
         brdf.specular = GGX_times_NdotL(V, L, surface.normal, max(surface.material.roughness, kMinRoughness), surface.material.specularF0);
     return brdf;
 }

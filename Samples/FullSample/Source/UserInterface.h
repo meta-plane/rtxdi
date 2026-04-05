@@ -167,7 +167,7 @@ struct UIDebugOutputSettings
 
 struct LocalLightSamplingUIData
 {
-    ReSTIRDI_LocalLightSamplingMode localLightSamplingMode = ReSTIRDI_LocalLightSamplingMode::Uniform;
+    ReSTIRDI_LocalLightSamplingMode localLightSamplingMode = ReSTIRDI_LocalLightSamplingMode::ReGIR_RIS;
     uint32_t numLocalLightUniformSamples = 8;
     uint32_t numLocalLightPowerRISSamples = 8;
     uint32_t numLocalLightReGIRRISSamples = 8;
@@ -189,12 +189,12 @@ struct UIData
     ibool enableTextures = true;
     uint32_t framesToAccumulate = 0;
     ibool enableToneMapping = true;
-    ibool enableAutoExposure = false;
+    ibool autoExposure = true; // phgphg: auto exposure, toggle between auto and manual exposure
+    float exposureValue = 0.0f; // phgphg: auto exposure, log2 exposure value for manual mode
     ibool enablePixelJitter = true;
     ibool rasterizeGBuffer = true;
     ibool useRayQuery = true;
     ibool enableBloom = false;
-    ibool visualizeMaterialDomain = false; // phgphg: material domain visualization
     float exposureBias = -1.0f;
     float verticalFov = 60.f;
 

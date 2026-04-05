@@ -99,7 +99,7 @@ void shadeSurface(
     u_Normals[pixelPosition] = ndirToOctUnorm32(ms.shadingNormal);
     u_GeoNormals[pixelPosition] = ndirToOctUnorm32(gs.flatNormal);
     u_Emissive[pixelPosition] = float4(ms.emissiveColor, maxGlassHitT);
-    u_MotionVectors[pixelPosition] = float4(motion, float(gs.material.domain)); // phgphg: material domain visualization, store domain in w channel
+    u_MotionVectors[pixelPosition] = float4(motion, 0);
 
     if (all(g_Const.materialReadbackPosition == int2(pixelPosition)))
     {

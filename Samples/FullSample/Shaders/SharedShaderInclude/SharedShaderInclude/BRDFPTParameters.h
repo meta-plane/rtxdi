@@ -36,7 +36,7 @@ struct BRDFPathTracing_Parameters
     uint32_t enableIndirectEmissiveSurfaces;
     uint32_t enableSecondaryResampling;
     uint32_t enableReSTIRGI;
-    uint32_t pad1;
+    uint32_t deferDeltaSurfaceShading; // phgphg: deferDeltaSurfaceShading toggle
 
     BRDFPathTracing_MaterialOverrideParameters materialOverrideParams;
     BRDFPathTracing_SecondarySurfaceReSTIRDIParameters secondarySurfaceReSTIRDIParams;
