@@ -275,6 +275,7 @@ struct UIData
         RTXDI_GISpatialResamplingParameters spatialResamplingParams;
         RTXDI_BoilingFilterParameters boilingFilter;
         RTXDI_GIFinalShadingParameters finalShadingParams;
+        bool decoupleSpatialHistory = false; // phgphg: Decouple Spatial History
     } restirGI;
 
     struct

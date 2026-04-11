@@ -861,6 +861,9 @@ void UserInterface::SamplingSettings()
         bool isUsingIndirect = m_ui.indirectLightingMode != IndirectLightingMode::None;
 
         m_ui.resetAccumulation |= ImGui::Checkbox("Defer Delta Surface Shading", (bool*)&m_ui.lightingSettings.brdfptParams.deferDeltaSurfaceShading); // phgphg: deferDeltaSurfaceShading toggle
+        m_ui.resetAccumulation |= ImGui::Checkbox("Firefly Suppression", (bool*)&m_ui.lightingSettings.brdfptParams.enableFireflySuppression); // phgphg: firefly suppression
+        if (m_ui.lightingSettings.brdfptParams.enableFireflySuppression)
+            m_ui.resetAccumulation |= ImGui::InputFloat("Firefly Threshold", &m_ui.lightingSettings.brdfptParams.fireflyThreshold, 1.f, 10.f, "%.1f"); // phgphg: firefly suppression
 
         if (m_ui.indirectLightingMode == IndirectLightingMode::Brdf || m_ui.indirectLightingMode == IndirectLightingMode::ReStirGI)
             m_ui.resetAccumulation |= ImGui::SliderFloat("Min Secondary Roughness", &m_ui.lightingSettings.brdfptParams.materialOverrideParams.minSecondaryRoughness, 0.f, 1.f);
@@ -902,6 +905,13 @@ void UserInterface::SamplingSettings()
                 "Temporal + Spatial\0"
                 "Fused Spatiotemporal\0");
             ImGui::PopItemWidth();
+
+            // phgphg: GI Target PDF mode
+            m_ui.resetAccumulation |= ImGui::Combo("GI Target PDF", (int*)&m_ui.lightingSettings.brdfptParams.giTargetPdfMode,
+                "Radiance + Cos + BRDF\0"
+                "Radiance + Cos\0"
+                "Radiance Only\0");
+
             ImGui::Separator();
 
             if ((m_ui.restirGI.resamplingMode == rtxdi::ReSTIRGI_ResamplingMode::Temporal ||
@@ -914,6 +924,8 @@ void UserInterface::SamplingSettings()
 
                 m_ui.resetAccumulation |= ImGui::SliderInt("Max reservoir age", (int*)&m_ui.restirGI.temporalResamplingParams.maxReservoirAge, 1, 100);
                 m_ui.resetAccumulation |= ImGui::SliderInt("Max history length", (int*)&m_ui.restirGI.temporalResamplingParams.maxHistoryLength, 1, 100);
+                m_ui.resetAccumulation |= ImGui::SliderInt("Temporal Sample Count", (int*)&m_ui.restirGI.temporalResamplingParams.temporalSampleCount, 1, 8); // phgphg: temporal sample count
+                m_ui.resetAccumulation |= ImGui::Checkbox("Disable Temporal Jacobian", (bool*)&m_ui.restirGI.temporalResamplingParams.disableJacobian); // phgphg: disable temporal Jacobian
                 m_ui.resetAccumulation |= ImGui::Checkbox("Enable permutation sampling", (bool*)&m_ui.restirGI.temporalResamplingParams.enablePermutationSampling);
                 m_ui.resetAccumulation |= ImGui::Checkbox("Enable fallback sampling", (bool*)&m_ui.restirGI.temporalResamplingParams.enableFallbackSampling);
 
@@ -995,6 +1007,11 @@ void UserInterface::SamplingSettings()
 
             m_ui.resetAccumulation |= ImGui::Checkbox("Final visibility", (bool*)&m_ui.restirGI.finalShadingParams.enableFinalVisibility);
             m_ui.resetAccumulation |= ImGui::Checkbox("Final MIS", (bool*)&m_ui.restirGI.finalShadingParams.enableFinalMIS);
+
+            if (m_ui.restirGI.resamplingMode == rtxdi::ReSTIRGI_ResamplingMode::TemporalAndSpatial)
+            {
+                m_ui.resetAccumulation |= ImGui::Checkbox("Decouple Spatial History", &m_ui.restirGI.decoupleSpatialHistory); // phgphg: Decouple Spatial History
+            }
         }
         else if (m_ui.indirectLightingMode == IndirectLightingMode::ReStirPT)
         {

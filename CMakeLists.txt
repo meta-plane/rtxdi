@@ -33,7 +33,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
 endif()
 
-set(DONUT_EMBED_SHADER_PDBS ON CACHE BOOL "" FORCE) # phgphg: embed shader PDBs for all donut shaders
+# set(DONUT_EMBED_SHADER_PDBS ON CACHE BOOL "" FORCE) # phgphg: embed shader PDBs for all donut shaders
 option(DONUT_WITH_DX11 "" OFF)
 option(DONUT_WITH_VULKAN "" ON)
 option(DONUT_WITH_LZ4 "" OFF)

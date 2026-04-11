@@ -14,6 +14,7 @@
 #define RAB_LIGHT_SAMPLING_HLSLI
 
 #include "RAB_RayPayload.hlsli"
+#include "RAB_RTShaders.hlsli" // phgphg: Alpha-tested emissive support, needed for AnyHit shader in TraceRay path
 
 float2 RAB_GetEnvironmentMapRandXYFromDir(float3 worldDir)
 {
@@ -87,8 +88,24 @@ float RAB_GetLightSampleTargetPdfForSurface(RAB_LightSample lightSample, RAB_Sur
 // Computes the weight of the given GI sample when the given surface is shaded using that GI sample.
 float RAB_GetGISampleTargetPdfForSurface(float3 samplePosition, float3 sampleRadiance, RAB_Surface surface)
 {
-    float3 reflectedRadiance = RAB_GetReflectedBrdfRadianceForSurface(samplePosition, sampleRadiance, surface);
+    // phgphg: GI Target PDF mode
+    uint mode = g_Const.brdfPT.giTargetPdfMode;
 
+    if (mode == 2) // Radiance Only
+    {
+        return RTXDI_Luminance(sampleRadiance);
+    }
+
+    float3 L = normalize(samplePosition - surface.worldPos);
+    float cosTheta = saturate(dot(surface.normal, L));
+
+    if (mode == 1) // Radiance + Cos
+    {
+        return RTXDI_Luminance(sampleRadiance * cosTheta);
+    }
+
+    // mode == 0: Radiance + Cos + BRDF (default)
+    float3 reflectedRadiance = RAB_GetReflectedBrdfRadianceForSurface(samplePosition, sampleRadiance, surface);
     return RTXDI_Luminance(reflectedRadiance);
 }
 
@@ -182,9 +199,26 @@ bool RAB_TraceRayForLocalLight(float3 origin, float3 direction, float tMin, floa
     float2 hitUV;
     bool hitAnything;
 #if USE_RAY_QUERY
-    RayQuery<RAY_FLAG_CULL_NON_OPAQUE | RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES> rayQuery;
-    rayQuery.TraceRayInline(SceneBVH, RAY_FLAG_NONE, INSTANCE_MASK_OPAQUE, ray);
-    rayQuery.Proceed();
+    // phgphg: Alpha-tested emissive support, make alpha-tested meshes visible to ReSTIR BRDF sampling
+    RayQuery<RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES> rayQuery;                                                     // RAY_FLAG_CULL_NON_OPAQUE | RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES
+    rayQuery.TraceRayInline(SceneBVH, RAY_FLAG_NONE, INSTANCE_MASK_OPAQUE | INSTANCE_MASK_ALPHA_TESTED, ray);   // INSTANCE_MASK_OPAQUE
+
+    while (rayQuery.Proceed())
+    {
+        if (rayQuery.CandidateType() == CANDIDATE_NON_OPAQUE_TRIANGLE)
+        {
+            float3 unused = 1.0;
+            if (considerTransparentMaterial(
+                rayQuery.CandidateInstanceID(),
+                rayQuery.CandidateGeometryIndex(),
+                rayQuery.CandidatePrimitiveIndex(),
+                rayQuery.CandidateTriangleBarycentrics(),
+                unused))
+            {
+                rayQuery.CommitNonOpaqueTriangleHit();
+            }
+        }
+    }
 
     hitAnything = rayQuery.CommittedStatus() == COMMITTED_TRIANGLE_HIT;
     if (hitAnything)
@@ -197,7 +231,12 @@ bool RAB_TraceRayForLocalLight(float3 origin, float3 direction, float tMin, floa
     payload.instanceID = ~0u;
     payload.throughput = 1.0;
 
-    TraceRay(SceneBVH, RAY_FLAG_CULL_NON_OPAQUE | RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES, INSTANCE_MASK_OPAQUE, 0, 0, 0, ray, payload);
+    // phgphg: Alpha-tested emissive support, AnyHit shader handles alpha testing
+    TraceRay(
+        SceneBVH, 
+        RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES,                // RAY_FLAG_CULL_NON_OPAQUE | RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES
+        INSTANCE_MASK_OPAQUE | INSTANCE_MASK_ALPHA_TESTED,  // INSTANCE_MASK_OPAQUE
+        0, 0, 0, ray, payload);
     hitAnything = payload.instanceID != ~0u;
     if (hitAnything)
     {

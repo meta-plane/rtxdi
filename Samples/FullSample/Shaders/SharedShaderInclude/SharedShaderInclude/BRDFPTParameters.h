@@ -38,6 +38,11 @@ struct BRDFPathTracing_Parameters
     uint32_t enableReSTIRGI;
     uint32_t deferDeltaSurfaceShading; // phgphg: deferDeltaSurfaceShading toggle
 
+    uint32_t enableFireflySuppression; // phgphg: firefly suppression toggle
+    float fireflyThreshold; // phgphg: firefly suppression threshold
+    uint32_t giTargetPdfMode; // phgphg: GI Target PDF mode, 0: Radiance+Cos+BRDF, 1: Radiance+Cos, 2: Radiance Only
+    uint32_t pad3;
+
     BRDFPathTracing_MaterialOverrideParameters materialOverrideParams;
     BRDFPathTracing_SecondarySurfaceReSTIRDIParameters secondarySurfaceReSTIRDIParams;
 };

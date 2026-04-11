@@ -31,7 +31,7 @@
 
 #include "ShadingHelpers.hlsli"
 
-static const float c_MaxIndirectRadiance = 10;
+// static const float c_MaxIndirectRadiance = 10; // phgphg: replaced by g_Const.brdfPT.fireflyThreshold
 
 #if USE_RAY_QUERY
 [numthreads(RTXDI_SCREEN_SPACE_GROUP_SIZE, RTXDI_SCREEN_SPACE_GROUP_SIZE, 1)]
@@ -130,10 +130,13 @@ void RayGen()
         ShadeSurfaceWithLightSample(reservoir, secondarySurface, g_Const.restirDI.shadingParams, lightSample, /* previousFrameTLAS = */ false,
             /* enableVisibilityReuse = */ false, /* enableVisibilityShortcut */ false, indirectDiffuse, indirectSpecular, lightDistance);
         radiance += indirectDiffuse * secondarySurface.material.diffuseAlbedo + indirectSpecular;
-        // Firefly suppression
-        float indirectLuminance = calcLuminance(radiance);
-        // if (indirectLuminance > c_MaxIndirectRadiance)               // phgphg
-        //     radiance *= c_MaxIndirectRadiance / indirectLuminance;
+        // phgphg: firefly suppression
+        if (g_Const.brdfPT.enableFireflySuppression)
+        {
+            float indirectLuminance = calcLuminance(radiance);
+            if (indirectLuminance > g_Const.brdfPT.fireflyThreshold)
+                radiance *= g_Const.brdfPT.fireflyThreshold / indirectLuminance;
+        }
     }
 
     bool outputShadingResult = true;

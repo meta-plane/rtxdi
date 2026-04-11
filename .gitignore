@@ -9,3 +9,4 @@
 compile-shaders.bat
 /tests
 /external/dxc
+/reference

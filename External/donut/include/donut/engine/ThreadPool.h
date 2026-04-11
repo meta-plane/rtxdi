@@ -24,6 +24,7 @@
 
 #include <atomic>
 #include <condition_variable>
+#include <exception> // phgphg: scene load failure handling
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -70,6 +71,9 @@ private:
     std::condition_variable m_forward;
     std::atomic<bool> m_terminate = false;
     std::atomic<int> m_pendingTasks = 0;
+    // phgphg: scene load failure handling
+    std::mutex m_exceptionMutex;
+    std::exception_ptr m_firstException;
 };
 
 }

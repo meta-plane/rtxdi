@@ -26,6 +26,7 @@
 #include <donut/engine/CommonRenderPasses.h>
 #include <donut/core/vfs/VFS.h>
 
+#include <cassert> // phgphg: scene load failure handling
 #include <cstdlib>
 #include <sstream>
 
@@ -72,7 +73,7 @@ void ApplicationBase::Render(nvrhi::IFramebuffer* framebuffer)
         m_SceneLoadingThread->join();
         m_SceneLoadingThread = nullptr;
 
-        // SceneLoaded() would already get called from 
+        // SceneLoaded() would already get called from
         // BeginLoadingScene() in case of synchronous loads
         SceneLoaded();
     }
@@ -139,12 +140,25 @@ void ApplicationBase::BeginLoadingScene(std::shared_ptr<IFileSystem> fs, const s
     if (m_IsAsyncLoad)
     {
         m_SceneLoadingThread = std::make_unique<std::thread>([this, fs, sceneFileName]() {
-			m_SceneLoaded = LoadScene(fs, sceneFileName); 
-			});
+            // phgphg: scene load failure handling
+            bool success = LoadScene(fs, sceneFileName);
+            if (!success)
+            {
+                log::fatal("Scene loading failed: '%s'", sceneFileName.generic_string().c_str());
+                assert(!"Scene loading failed. Check the log for details.");
+            }
+            m_SceneLoaded = true;
+        });
     }
     else
     {
         m_SceneLoaded = LoadScene(fs, sceneFileName);
+        // phgphg: scene load failure handling
+        if (!m_SceneLoaded)
+        {
+            log::fatal("Scene loading failed: '%s'", sceneFileName.generic_string().c_str());
+            assert(!"Scene loading failed. Check the log for details.");
+        }
         SceneLoaded();
     }
 }

@@ -36,6 +36,7 @@ this software is released into the Public Domain.
 
 #include <donut/engine/Scene.h>
 #include <functional> // phgphg: rect light
+#include <stdexcept> // phgphg: scene load failure handling
 #include <donut/engine/GltfImporter.h>
 #include <donut/engine/ThreadPool.h>
 #include <donut/core/json.h>
@@ -195,7 +196,9 @@ void Scene::LoadModelAsync(
         threadPool->AddTask([this, index, threadPool, fileName]()
         {
             SceneImportResult result;
-            m_GltfImporter->Load(fileName, *m_TextureCache, g_LoadingStats, threadPool, result);
+            // phgphg: scene load failure handling
+            if (!m_GltfImporter->Load(fileName, *m_TextureCache, g_LoadingStats, threadPool, result))
+                throw std::runtime_error("Failed to load model: " + fileName.generic_string());
             ++g_LoadingStats.ObjectsLoaded;
             m_Models[index] = result;
         });
@@ -203,7 +206,9 @@ void Scene::LoadModelAsync(
     else
     {
         SceneImportResult result;
-        m_GltfImporter->Load(fileName, *m_TextureCache, g_LoadingStats, threadPool, result);
+        // phgphg: scene load failure handling
+        if (!m_GltfImporter->Load(fileName, *m_TextureCache, g_LoadingStats, threadPool, result))
+            throw std::runtime_error("Failed to load model: " + fileName.generic_string());
         ++g_LoadingStats.ObjectsLoaded;
         m_Models[index] = result;
     }

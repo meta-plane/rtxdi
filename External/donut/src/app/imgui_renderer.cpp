@@ -269,6 +269,10 @@ bool ImGui_Renderer::KeyboardUpdate(int key, int scancode, int action, int mods)
     ImGuiKey imKey = ImGui_ImplGlfw_KeyToImGuiKey(key);
     io.AddKeyEvent(imKey, keyIsDown);
 
+    // phgphg: Fix camera SlowDown stuck after Ctrl+click on ImGui slider
+    if (!keyIsDown)
+        return false;
+
     return io.WantCaptureKeyboard;
 }
 

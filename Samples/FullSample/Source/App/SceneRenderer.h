@@ -88,6 +88,7 @@ enum class SceneAsset
     Bistro,
     BistroMirror,
     CornellBox,
+    SphereScene,
 };
 
 struct SceneRendererStartupSettings
@@ -102,7 +103,8 @@ struct SceneRendererStartupSettings
     bool benchmark = false;
     int renderWidth = 0;
     int renderHeight = 0;
-    SceneAsset sceneAsset = SceneAsset::BistroMirror;
+    // SceneAsset sceneAsset = SceneAsset::BistroMirror;
+    SceneAsset sceneAsset = SceneAsset::SphereScene; // phgphg: sphere scene
 };
 
 class SceneRenderer : public app::ApplicationBase

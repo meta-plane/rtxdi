@@ -94,6 +94,11 @@ struct RTXDI_GITemporalResamplingParameters //ReSTIRGI_TemporalResamplingParamet
 
     // Random number for permutation sampling that is the same for all pixels in the frame
     uint32_t uniformRandomNumber;
+
+    uint32_t temporalSampleCount; // phgphg: temporal sample count
+    uint32_t disableJacobian; // phgphg: disable temporal Jacobian
+    uint32_t pad1;
+    uint32_t pad2;
 };
 
 // See note for ReSTIRGI_TemporalResamplingParameters

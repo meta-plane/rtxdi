@@ -91,6 +91,11 @@ DefaultCameraSettingsForScene GetDefaultCameraSettingsForScene(SceneAsset sa)
                  .direction = float3(0.0f, 0.0f, 1.0f),
                  .movementSpeed = 3.0f,
                  .rotateSpeed = 0.005f};
+    case SceneAsset::SphereScene:   // phgphg: sphere scene
+        return { .position = float3(300.0f, 30.0f, 300.0f),
+                 .direction = float3(-0.6964f, -0.1736f, -0.6964f), // Ry(yaw) & Rx(pitch)
+                 .movementSpeed = 200.0f,
+                 .rotateSpeed = 0.005f };
     default:
         log::warning("Loading default settings for scene without default settings. Update your code.");
         return { .position = float3(0.0f, 1.0f, 0.0),
@@ -182,6 +187,9 @@ bool SceneRenderer::Init()
         break;
     case SceneAsset::CornellBox:
         scenePath = "/Assets/Media/CornellBox/CornellBox.gltf";
+        break;
+    case SceneAsset::SphereScene:   // phgphg: sphere scene
+        scenePath = "/Assets/Media/SphereScene/sphere_scene.glb";
         break;
     }
 
@@ -1000,6 +1008,7 @@ void SceneRenderer::UpdateReSTIRGIContextFromUI()
     restirGIContext.SetSpatialResamplingParameters(m_ui.restirGI.spatialResamplingParams);
     restirGIContext.SetSpatioTemporalResamplingParameters(SpatioTemporalParamsFromIndividualParams(m_ui.restirGI.temporalResamplingParams, m_ui.restirGI.spatialResamplingParams));
     restirGIContext.SetFinalShadingParameters(m_ui.restirGI.finalShadingParams);
+    restirGIContext.SetDecoupleSpatialHistory(m_ui.restirGI.decoupleSpatialHistory); // phgphg: Decouple Spatial History
 }
 
 void SceneRenderer::UpdateReSTIRPTContextFromUI()

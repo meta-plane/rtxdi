@@ -68,6 +68,7 @@ public:
     void SetSpatialResamplingParameters(const RTXDI_GISpatialResamplingParameters& spatialResamplingParams);
     void SetSpatioTemporalResamplingParameters(const RTXDI_GISpatioTemporalResamplingParameters& spatioTemporalParams);
     void SetFinalShadingParameters(const RTXDI_GIFinalShadingParameters& finalShadingParams);
+    void SetDecoupleSpatialHistory(bool enable); // phgphg: Decouple Spatial History
 
 private:
     ReSTIRGIStaticParameters m_staticParams;
@@ -81,6 +82,7 @@ private:
     RTXDI_GISpatialResamplingParameters m_spatialResamplingParams;
     RTXDI_GISpatioTemporalResamplingParameters m_spatioTemporalResamplingParams;
     RTXDI_GIFinalShadingParameters m_finalShadingParams;
+    bool m_decoupleSpatialHistory = false; // phgphg: Decouple Spatial History
 
     void UpdateBufferIndices();
 };

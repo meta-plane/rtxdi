@@ -210,9 +210,9 @@ int main(int argc, char** argv)
 #endif
     deviceParams.swapChainBufferCount = 3;
     deviceParams.enableRayTracingExtensions = true;
-    deviceParams.backBufferWidth = 1280 ;
-    deviceParams.backBufferHeight = 720 ;
-    deviceParams.vsyncEnabled = true;
+    deviceParams.backBufferWidth = 1200 ;
+    deviceParams.backBufferHeight = 800 ;
+    deviceParams.vsyncEnabled = false;
     deviceParams.infoLogSeverity = log::Severity::Debug;
 
     UIData ui;
@@ -224,8 +224,8 @@ int main(int argc, char** argv)
     ProcessCommandLine(argc, argv, g_ApplicationTitle, deviceParams, ui, args);
 #endif
 
-    args.graphicsApi = nvrhi::GraphicsAPI::VULKAN;
-    // args.graphicsApi = nvrhi::GraphicsAPI::D3D12;
+    // args.graphicsApi = nvrhi::GraphicsAPI::VULKAN;
+    args.graphicsApi = nvrhi::GraphicsAPI::D3D12;
 
     std::unique_ptr<app::DeviceManager> deviceManager(app::DeviceManager::Create(args.graphicsApi));
     const char* apiString = nvrhi::utils::GraphicsAPIToString(deviceManager->GetGraphicsAPI());

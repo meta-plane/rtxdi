@@ -83,10 +83,19 @@ void ThreadPool::AddTask(std::function<void()> func)
     AddTask(task);
 }
 
+// phgphg: scene load failure handling, rethrow stored exception
 void ThreadPool::WaitForTasks()
 {
     while(m_pendingTasks.load() != 0)
         std::this_thread::yield();
+
+    std::lock_guard<std::mutex> lock(m_exceptionMutex);
+    if (m_firstException)
+    {
+        std::exception_ptr ex = m_firstException;
+        m_firstException = nullptr;
+        std::rethrow_exception(ex);
+    }
 }
 
 void ThreadPool::StaticThreadProc(ThreadPool* self)
@@ -120,7 +129,10 @@ void ThreadPool::ThreadProc()
             }
             catch(...)
             {
-                // Ignore task exceptions
+                // phgphg: scene load failure handling, store first exception
+                std::lock_guard<std::mutex> lock(m_exceptionMutex);
+                if (!m_firstException)
+                    m_firstException = std::current_exception();
             }
             --m_pendingTasks;
         }

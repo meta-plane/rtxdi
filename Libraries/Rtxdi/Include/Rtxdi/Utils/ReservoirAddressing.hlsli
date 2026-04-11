@@ -46,15 +46,40 @@ uint RTXDI_ReservoirPositionToPointer(
         + positionInBlock.x;
 }
 
-// Internal SDK function that permutes the pixels sampled from the previous frame.
+// phgphg: comment 보강
+// Permutes the previous-frame pixel position so that adjacent pixels reference
+// different temporal neighbors, breaking correlation for spatial resampling.
+//
+// The net displacement per axis is ((p + offset) ^ 3) - (p + offset), where
+// p is the original coordinate and offset is derived from uniformRandomNumber.
+// Because XOR 3 only flips the lowest two bits, the displacement depends on
+// (p + offset) & 3 and is always one of {-3, -1, +1, +3}:
+//
+//   (p + offset) & 3 | displacement
+//   -----------------+-------------
+//          0         |     +3
+//          1         |     +1
+//          2         |     -1
+//          3         |     -3
+//
+// Key properties:
+//   - Zero displacement never occurs, so a pixel never re-reads its own reservoir.
+//   - Only odd displacements occur, which naturally swaps the checkerboard field
+//     (even/odd parity flips).
+//   - Different pixels get different displacements because p varies per pixel,
+//     even though offset is uniform across all pixels in the same frame.
+//     This is why the XOR cannot be factored out of the (p + offset) expression:
+//     XOR does not distribute over addition.
+//   - Changing uniformRandomNumber each frame rotates which displacement each
+//     pixel receives, decorrelating the permutation over time.
 void RTXDI_ApplyPermutationSampling(inout int2 prevPixelPos, uint uniformRandomNumber)
 {
     int2 offset = int2(uniformRandomNumber & 3, (uniformRandomNumber >> 2) & 3);
     prevPixelPos += offset;
- 
+
     prevPixelPos.x ^= 3;
     prevPixelPos.y ^= 3;
-    
+
     prevPixelPos -= offset;
 }
 

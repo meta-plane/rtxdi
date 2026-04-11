@@ -65,8 +65,8 @@ RTXDI_GIReservoir RTXDI_GITemporalResampling(
 
     RAB_Surface temporalSurface = RAB_EmptySurface();
 
-    // Try to find a matching surface in the neighborhood of the reprojected pixel
-    const int temporalSampleCount = 5;
+    // phgphg: temporal sample count
+    const int temporalSampleCount = int(tparams.temporalSampleCount);
     const int sampleCount = temporalSampleCount + (tparams.enableFallbackSampling ? 1 : 0);
     for (int i = 0; i < sampleCount; i++)
     {
@@ -146,12 +146,15 @@ RTXDI_GIReservoir RTXDI_GITemporalResampling(
     {
         // Found a valid temporal surface and its GI reservoir.
 
-        // Calculate Jacobian determinant to adjust weight.
-        //float jacobian = RTXDI_CalculateJacobian(RAB_GetSurfaceWorldPos(surface), RAB_GetSurfaceWorldPos(temporalSurface), temporalReservoir);
-		float jacobian = RTXDI_CalculateJacobian(RAB_GetSurfaceWorldPos(surface), RAB_GetSurfaceWorldPos(temporalSurface), temporalReservoir.position, temporalReservoir.normal);
+        // phgphg: disable temporal Jacobian
+        float jacobian = 1.0;
+        if (!tparams.disableJacobian)
+        {
+            jacobian = RTXDI_CalculateJacobian(RAB_GetSurfaceWorldPos(surface), RAB_GetSurfaceWorldPos(temporalSurface), temporalReservoir.position, temporalReservoir.normal);
 
-        if (!RAB_ValidateGISampleWithJacobian(jacobian))
-            foundTemporalReservoir = false;
+            if (!RAB_ValidateGISampleWithJacobian(jacobian))
+                foundTemporalReservoir = false;
+        }
 
         temporalReservoir.weightSum *= jacobian;
         

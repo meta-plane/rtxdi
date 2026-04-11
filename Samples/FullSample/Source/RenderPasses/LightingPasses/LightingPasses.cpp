@@ -81,6 +81,9 @@ BRDFPathTracing_Parameters GetDefaultBRDFPathTracingParams()
     params.enableIndirectEmissiveSurfaces = false;
     params.enableReSTIRGI = false;
     params.deferDeltaSurfaceShading = false; // phgphg: deferDeltaSurfaceShading toggle
+    params.enableFireflySuppression = false; // phgphg: firefly suppression
+    params.fireflyThreshold = 10.f; // phgphg: firefly suppression
+    params.giTargetPdfMode = 0; // phgphg: GI Target PDF mode, default: Radiance+Cos+BRDF
     params.materialOverrideParams = GetDefaultBRDFPathTracingMaterialOverrideParams();
     params.secondarySurfaceReSTIRDIParams = GetDefaultBRDFPathTracingSecondarySurfaceReSTIRDIParams();
     return params;
@@ -715,6 +718,9 @@ void LightingPasses::RenderIndirectLighting(
     constants.brdfPT.enableIndirectEmissiveSurfaces = enableEmissiveSurfaces;
     constants.brdfPT.enableReSTIRGI = indirectLightingMode == IndirectLightingMode::ReStirGI;
     constants.brdfPT.deferDeltaSurfaceShading = localSettings.brdfptParams.deferDeltaSurfaceShading; // phgphg: deferDeltaSurfaceShading toggle
+    constants.brdfPT.enableFireflySuppression = localSettings.brdfptParams.enableFireflySuppression; // phgphg: firefly suppression
+    constants.brdfPT.fireflyThreshold = localSettings.brdfptParams.fireflyThreshold; // phgphg: firefly suppression
+    constants.brdfPT.giTargetPdfMode = localSettings.brdfptParams.giTargetPdfMode; // phgphg: GI Target PDF mode
     constants.pt = localSettings.ptParameters;
 
     RTXDI_GIBufferIndices restirGIBufferIndices = restirGIContext.GetBufferIndices();

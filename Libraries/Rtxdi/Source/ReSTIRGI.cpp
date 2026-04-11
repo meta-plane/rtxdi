@@ -36,6 +36,8 @@ RTXDI_GITemporalResamplingParameters GetDefaultReSTIRGITemporalResamplingParams(
     params.maxReservoirAge = 30;
     params.normalThreshold = 0.6f;
     params.biasCorrectionMode = RTXDI_GIBiasCorrectionMode::Basic;
+    params.temporalSampleCount = 5; // phgphg: temporal sample count
+    params.disableJacobian = 0; // phgphg: disable temporal Jacobian
     return params;
 }
 
@@ -184,6 +186,12 @@ void ReSTIRGIContext::SetFinalShadingParameters(const RTXDI_GIFinalShadingParame
     m_finalShadingParams = finalShadingParams;
 }
 
+// phgphg: Decouple Spatial History
+void ReSTIRGIContext::SetDecoupleSpatialHistory(bool enable)
+{
+    m_decoupleSpatialHistory = enable;
+}
+
 void ReSTIRGIContext::UpdateBufferIndices()
 {
     switch (m_resamplingMode)
@@ -205,12 +213,27 @@ void ReSTIRGIContext::UpdateBufferIndices()
         m_bufferIndices.finalShadingInputBufferIndex = 1;
         break;
     case rtxdi::ReSTIRGI_ResamplingMode::TemporalAndSpatial:
-        m_bufferIndices.secondarySurfaceReSTIRDIOutputBufferIndex = 0;
-        m_bufferIndices.temporalResamplingInputBufferIndex = 1;
-        m_bufferIndices.temporalResamplingOutputBufferIndex = 0;
-        m_bufferIndices.spatialResamplingInputBufferIndex = 0;
-        m_bufferIndices.spatialResamplingOutputBufferIndex = 1;
-        m_bufferIndices.finalShadingInputBufferIndex = 1;
+        if (m_decoupleSpatialHistory) // phgphg: Decouple Spatial History
+        {
+            // phgphg: alternating buffers so next frame's prev = temporal output (not spatial)
+            uint32_t cur = m_frameIndex & 1;
+            uint32_t prev = 1 - cur;
+            m_bufferIndices.secondarySurfaceReSTIRDIOutputBufferIndex = cur;
+            m_bufferIndices.temporalResamplingInputBufferIndex = prev;
+            m_bufferIndices.temporalResamplingOutputBufferIndex = cur;
+            m_bufferIndices.spatialResamplingInputBufferIndex = cur;
+            m_bufferIndices.spatialResamplingOutputBufferIndex = prev;
+            m_bufferIndices.finalShadingInputBufferIndex = prev;
+        }
+        else
+        {
+            m_bufferIndices.secondarySurfaceReSTIRDIOutputBufferIndex = 0;
+            m_bufferIndices.temporalResamplingInputBufferIndex = 1;
+            m_bufferIndices.temporalResamplingOutputBufferIndex = 0;
+            m_bufferIndices.spatialResamplingInputBufferIndex = 0;
+            m_bufferIndices.spatialResamplingOutputBufferIndex = 1;
+            m_bufferIndices.finalShadingInputBufferIndex = 1;
+        }
         break;
     case rtxdi::ReSTIRGI_ResamplingMode::FusedSpatiotemporal:
         m_bufferIndices.secondarySurfaceReSTIRDIOutputBufferIndex = m_frameIndex & 1;
